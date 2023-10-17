@@ -1,6 +1,7 @@
 <?php
 
 include 'components/connect.php';
+include 'mail/sendmail.php';
 
 session_start();
 
@@ -16,9 +17,14 @@ if(isset($_SESSION['user_id'])){
 if(isset($_POST['submit'])){
    $oid = $_POST['oid'];
    $oid = filter_var($oid, FILTER_SANITIZE_STRING);
+   $get_email = $conn->prepare("SELECT `email` FROM `orders` WHERE id = ?");
+   $get_email->execute([$oid]);
+   if($get_email->rowCount() >0){
+      $email = $get_email->fetch(PDO::FETCH_ASSOC);
+      smtp_mailer($email['email'],'BIG CITY STORE','ĐƠN HÀNG CỦA BẠN ĐÃ HUỶ THÀNH CÔNG');
+   }
    $delete_orders = $conn->prepare("DELETE FROM `orders` WHERE id = ?");
    $delete_orders->execute([$oid]);
-
    $message[] = 'Huỷ đơn hàng thành công!';
 }
 
@@ -75,6 +81,7 @@ if(isset($_POST['submit'])){
          <p>Địa chỉ: <span><?= $fetch_orders['address']; ?></span></p>
          <p>Phương thức thanh toán: <span><?= $fetch_orders['method']; ?></span></p>
          <p>Đơn hàng: <span><?= $fetch_orders['total_products']; ?></span></p>
+         <p>Giảm giá: <span><?= $fetch_orders['discount']; ?></span></p>
          <p>Tổng tiền: <span><?= number_format( $fetch_orders['total_price'], 0, '', '.'); ?>đ</span></p>
          <p>Trạng thái: <span style="color:<?php if($fetch_orders['payment_status'] == 'Chờ xác nhận'){ echo 'red'; }else{ echo 'green'; }; ?>"><?= $fetch_orders['payment_status']; ?></span> </p>
          <input type="submit" value="Huỷ đơn hàng" class="btn <?php if($fetch_orders['payment_status'] != 'Chờ xác nhận'){echo 'disabled';} ?>" style="width:100%; background:var(--red); color:var(--white);" name="submit" onclick="return confirm('Xác nhận huỷ đơn hàng?');">

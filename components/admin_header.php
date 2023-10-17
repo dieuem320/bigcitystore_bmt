@@ -24,6 +24,7 @@ if(isset($message)){
          <a href="admin_accounts.php">Quản trị viên</a>
          <a href="users_accounts.php">Người dùng</a>
          <a href="messages.php">Lời nhắn</a>
+         <a href="discount.php">Giảm giá</a>
       </nav>
 
       <div class="icons">
@@ -39,10 +40,6 @@ if(isset($message)){
          ?>
          <p><?= $fetch_profile['name']; ?></p>
          <a href="update_profile.php" class="btn">Cập nhập thông tin</a>
-         <div class="flex-btn">
-            <a href="admin_login.php" class="option-btn">Đăng nhập</a>
-            <a href="register_admin.php" class="option-btn">Đăng kí</a>
-         </div>
          <a href="../components/admin_logout.php" onclick="return confirm('Xác nhận đăng xuất?');" class="delete-btn">Đăng xuất</a>
       </div>
 

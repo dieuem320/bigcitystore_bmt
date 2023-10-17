@@ -1,6 +1,7 @@
 <?php
 
 include 'components/connect.php';
+include 'mail/sendmail.php';
 
 session_start();
 
@@ -23,8 +24,29 @@ if(isset($_POST['submit'])){
    $method = filter_var($method, FILTER_SANITIZE_STRING);
    $address = $_POST['address'];
    $address = filter_var($address, FILTER_SANITIZE_STRING);
+   $name = $_POST['name'];
+   $name = filter_var($name, FILTER_SANITIZE_STRING);
    $total_products = $_POST['total_products'];
    $total_price = $_POST['total_price'];
+   
+   if(($_POST['code']) != ""){
+      $code = $_POST['code'];
+      $code = filter_var($code, FILTER_SANITIZE_STRING);
+      $get_amount = $conn->prepare("SELECT `amount` FROM `discount` WHERE code = ?");
+      $get_amount->execute([$code]);
+      if($get_amount->rowCount() >0){
+         $amount = $get_amount->fetch(PDO::FETCH_ASSOC);
+         $total_price = $total_price - ( $total_price / 100 * $amount['amount']);
+         $discount = $amount['amount'].'%';
+      } else{
+         $discount = "Không";
+      }
+
+   }else{
+      $discount = "Không";
+   }
+
+
 
    $check_cart = $conn->prepare("SELECT * FROM `cart` WHERE user_id = ?");
    $check_cart->execute([$user_id]);
@@ -35,8 +57,9 @@ if(isset($_POST['submit'])){
          $message[] = 'Xin mời nhập địa chỉ nhận hàng!';
       }else{
          
-         $insert_order = $conn->prepare("INSERT INTO `orders`(user_id, name, number, email, method, address, total_products, total_price) VALUES(?,?,?,?,?,?,?,?)");
-         $insert_order->execute([$user_id, $name, $number, $email, $method, $address, $total_products, $total_price]);
+         $insert_order = $conn->prepare("INSERT INTO `orders`(user_id, name, number, email, method, address, total_products, total_price, discount) VALUES(?,?,?,?,?,?,?,?,?)");
+         $insert_order->execute([$user_id, $name, $number, $email, $method, $address, $total_products, $total_price, $discount]);
+         smtp_mailer($email,'BIG CITY STORE','ĐẶT HÀNG THÀNH CÔNG! NHÂN VIÊN SẼ GỌI CHO BẠN ĐỂ XÁC NHẬN ĐƠN HÀNG!');
 
          $delete_cart = $conn->prepare("DELETE FROM `cart` WHERE user_id = ?");
          $delete_cart->execute([$user_id]);
@@ -129,6 +152,8 @@ if(isset($_POST['submit'])){
          <option value="Credit Card">Credit Card</option>
          <option value="ATM">ATM</option>
       </select>
+      <div class="btn">Mã giảm giá</div>
+      <input type="text"  value="" name="code" class="box">
       <input type="submit" value="Đặt Hàng" class="btn <?php if($fetch_profile['address'] == ''){echo 'disabled';} ?>" style="width:100%; background:var(--red); color:var(--white);" name="submit" onclick="return confirm('Xác nhận đặt hàng?');">
    </div>
 

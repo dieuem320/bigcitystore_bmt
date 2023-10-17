@@ -1,7 +1,9 @@
 <?php
-$host = "localhost"; 
-$dbname="phone_db"; 
-$username = "root";
-$password = ""; 
-$conn = new PDO("mysql:host=$host;port=3308; dbname=$dbname; charset=utf8", $username, $password);
+
+$db_name = 'mysql:host=localhost;dbname=phone_db;port=3308';
+$user_name = 'root';
+$user_password = '';
+
+$conn = new PDO($db_name, $user_name, $user_password);
+
 ?>
